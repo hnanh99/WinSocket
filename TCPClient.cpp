@@ -45,14 +45,14 @@ int main()
 
     //inet_pton
     int check;
-    unsigned long addr_out;
-    if ((check = inet_pton(AF_INET, cp, &addr_out)) < 1)
+    sockaddr_in addr_out;
+    if ((check = inet_pton(AF_INET, cp, &addr_out.sin_addr)) < 1)
     {
         cout << "Error Inet Pton:" << GetLastError() << endl;
     }
     else if (check == 1)
     {
-        cout << "By inet_pton: "<< addr_out << endl;
+        cout << "By inet_pton: " << addr_out.sin_addr.S_un.S_addr << endl; //s_union . s_address?
     }
 
     // Cleanup
