@@ -13,13 +13,14 @@
 // g++ TCPclient.cpp -o TCPclient.exe -lws2_32
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <WS2tcpip.h>
-
-
 #include <Winsock2.h>
 #include <string.h>
+#include <iostream>
+
+#include "Setting.h"
+
 //#pragma comment(lib,"Ws2_32.lib")
 
-#include <iostream>
 using namespace std;
 
 int main()
@@ -54,6 +55,41 @@ int main()
     {
         cout << "By inet_pton: " << addr_out.sin_addr.S_un.S_addr << endl; //s_union . s_address?
     }
+
+    //Step1: Create a socket
+    SOCKET listensock;
+    listensock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    
+    if (listensock == INVALID_SOCKET)
+    {
+        cout << "Socket function error: " << WSAGetLastError() <<endl;
+    }
+    else
+    {
+        cout << "Create socket complete: " << listensock << endl;
+    }
+
+    //Step2: Bind
+    sockaddr_in tcpServerAddr;
+    tcpServerAddr.sin_family = AF_INET;
+    tcpServerAddr.sin_port = htons(SERVER_PORT);
+    tcpServerAddr.sin_addr.S_un.S_addr = inet_addr(SERVER_ADDR);
+
+    if(!bind(listensock,(sockaddr *) &tcpServerAddr, sizeof(tcpServerAddr)))
+    {
+        cout << "Bind API completed seccessfully" << endl;
+        //return 0;
+    }
+
+    //Step 3: Listening
+    int backlog = 5;
+    if(!listen(listensock,backlog))
+    {
+        cout << "Successfully !!! Server is listening" << endl;
+    }
+
+    closesocket(listensock);
+
 
     // Cleanup
     if((WSACleanup())==SOCKET_ERROR)    
