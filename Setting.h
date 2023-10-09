@@ -1,2 +1,3 @@
 #define SERVER_PORT 5500
 #define SERVER_ADDR "127.0.0.148"
+#define DEFAULT_BUFLEN 512

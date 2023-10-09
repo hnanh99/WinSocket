@@ -1,5 +1,5 @@
 
-// g++ TCPclient.cpp -o TCPclient.exe -lws2_32
+// g++ TCPServer.cpp -o TCPServer.exe -lws2_32
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <WS2tcpip.h>
 #include <Winsock2.h>
@@ -58,37 +58,44 @@ int main()
         cout << "Create socket complete: " << listensock << endl;
     }
 
-    //Step2: connect
+    //Step2: Bind
     sockaddr_in tcpServerAddr;
     tcpServerAddr.sin_family = AF_INET;
     tcpServerAddr.sin_port = htons(SERVER_PORT);
     tcpServerAddr.sin_addr.S_un.S_addr = inet_addr(SERVER_ADDR);
 
-    if (!connect(listensock,(sockaddr*) &tcpServerAddr,sizeof(tcpServerAddr)))
+    if(!bind(listensock,(sockaddr *) &tcpServerAddr, sizeof(tcpServerAddr)))
     {
-        cout <<"Connect Successful" << endl;
+        cout << "Bind API completed seccessfully" << endl;
+        //return 0;
+    }
+
+    //Step 3: Listening
+    int backlog = 5;
+    if(!listen(listensock,backlog))
+    {
+        cout << "Successfully !!! Server is listening" << endl;
+    }
+
+    //Step 4: Accept
+    SOCKET accept_socket;
+
+    if ((accept_socket = accept(listensock,NULL,NULL))==INVALID_SOCKET)
+    {
+        cout << "Accept failed with error: " << WSAGetLastError();
+
     }
     else
     {
-        cout <<"Connect error with code: "<< WSAGetLastError();
-    }
-
-    //Step3: Send
-    int result;
-    char const *sendbuf = "Test sending"; 
-
-    if((result = send(listensock, sendbuf,(int)strlen(sendbuf),0)) == SOCKET_ERROR){
-        cout << "Send failed with code: " << WSAGetLastError();
-    }
-    else{
-        cout << "Send " << result << " bytes" << endl; 
+        cout << "Client connected" << endl;
     };
     
-    //Step4: Receive
+    //Step 5: Receive
+    int result;
     char *recvbuf = new char[DEFAULT_BUFLEN];
     int recvbuflen = DEFAULT_BUFLEN;
 
-    if((result = recv(listensock,recvbuf,recvbuflen,0)) == SOCKET_ERROR){
+    if((result = recv(accept_socket,recvbuf,recvbuflen,0)) == SOCKET_ERROR){
         cout << "Recv failed: %d\n" << WSAGetLastError();
         
     }
@@ -99,8 +106,17 @@ int main()
         cout << "Bytes received:" <<  result << endl;
         cout << recvbuf << endl;
     };
+    
+    //Step 6: Send
+    char const *sendbuf = "Message from server: received";
+    if ((result = send(accept_socket, sendbuf, (int)strlen(sendbuf),0)) == SOCKET_ERROR){
+        cout << "Send failed with code: " << WSAGetLastError() << endl;
+    }
+    else{
+        cout << "Send " << result << "bytes" << endl;
+    }
 
-    shutdown(listensock, 2);
+    shutdown(accept_socket, 2);
     closesocket(listensock);
 
 
