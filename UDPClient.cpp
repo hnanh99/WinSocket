@@ -64,6 +64,8 @@ int main(int argc,char** argv){
         cout << "Sended " << result << " bytes" << endl;
     };
 
+    
+
     closesocket(sock);
 
     WSACleanup();
